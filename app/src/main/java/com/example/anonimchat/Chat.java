@@ -61,7 +61,7 @@ public class Chat extends AppCompatActivity {
              database2 = FirebaseDatabase.getInstance().getReference("Rooms").child("room2").child("messages");
              database3 = FirebaseDatabase.getInstance().getReference("Rooms").child("room2").child("Users");
          }
-         name = getIntent().getStringExtra("name");
+         name = getIntent().getStringExtra("user");
          key = getIntent().getStringExtra("key");
          //getMessages();
         fab.setOnClickListener(new View.OnClickListener() {
@@ -73,14 +73,14 @@ public class Chat extends AppCompatActivity {
                 // of ChatMessage to the Firebase database
                 database.child("room1").child("messages")
                         .push()
-                        .setValue( editText.getText().toString());
+                        .setValue( name+": "+ editText.getText().toString());
 
                     getMessages();
                 }
                 else if(i==2){
                     database.child("room2").child("messages")
                             .push()
-                            .setValue(editText.getText().toString());
+                            .setValue(name+": "+editText.getText().toString());
 
                     getMessages();
                 }

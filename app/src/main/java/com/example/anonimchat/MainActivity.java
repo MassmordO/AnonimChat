@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case 2 :
                         String key2 = dt3.push().getKey();
-                        dt2.child(key2).setValue(name.getText().toString());
+                        dt3.child(key2).setValue(name.getText().toString());
                         //database.child("room2").child("messages").setValue("Вы начали чат");
                         Intent intent2 = new Intent(MainActivity.this,Chat.class);
                         intent2.putExtra("room",2);
