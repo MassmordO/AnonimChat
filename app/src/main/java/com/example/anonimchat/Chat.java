@@ -44,7 +44,7 @@ public class Chat extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        FloatingActionButton fab =findViewById(R.id.fab);
+        fab =findViewById(R.id.fab);
         editText = findViewById(R.id.input);
         database = FirebaseDatabase.getInstance().getReference("Rooms");
         massages = findViewById(R.id.list_of_messages);
@@ -63,14 +63,11 @@ public class Chat extends AppCompatActivity {
          }
          name = getIntent().getStringExtra("user");
          key = getIntent().getStringExtra("key");
-         //getMessages();
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 if(i==1){
-                // Read the input field and push a new instance
-                // of ChatMessage to the Firebase database
                 database.child("room1").child("messages")
                         .push()
                         .setValue( name+": "+ editText.getText().toString());
@@ -89,25 +86,6 @@ public class Chat extends AppCompatActivity {
         });
 
     }
-//    private void displayChat() {
-//
-//        ListView listMessages = (ListView)findViewById(R.id.list_of_messages);
-//        FirebaseListOptions<ChatMessage> options = new FirebaseListOptions.Builder<ChatMessage>()
-//                .setLayout(R.layout.chat_maket)
-//                .setQuery(database.child("messages"), ChatMessage.class)
-//                .build();
-//        adapter = new FirebaseListAdapter<ChatMessage>(options) {
-//            @Override
-//            protected void populateView(View v, ChatMessage model, int position) {
-//
-//                TextView textMessage;
-//                textMessage = (TextView)v.findViewById(R.id.message_text);
-//
-//                textMessage.setText(model.getMessageText());
-//            }
-//        };
-//        listMessages.setAdapter(adapter);
-//    }
     private void getMessages(){
         ValueEventListener chelListener = new ValueEventListener() {
             @Override
