@@ -49,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
 
                         String key = dt2.push().getKey();
                         dt2.child(key).setValue(name.getText().toString());
-                        //database.child("room1").child("messages").setValue("Вы начали чат");
                         Intent intent = new Intent(MainActivity.this,Chat.class);
                         intent.putExtra("room",1);
                         intent.putExtra("user",name.getText().toString());
@@ -60,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
                     case 2 :
                         String key2 = dt3.push().getKey();
                         dt3.child(key2).setValue(name.getText().toString());
-                        //database.child("room2").child("messages").setValue("Вы начали чат");
                         Intent intent2 = new Intent(MainActivity.this,Chat.class);
                         intent2.putExtra("room",2);
                         intent2.putExtra("user",name.getText().toString());

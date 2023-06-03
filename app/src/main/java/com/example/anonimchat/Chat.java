@@ -1,24 +1,38 @@
 package com.example.anonimchat;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.time.LocalDate;
 import java.time.temporal.TemporalField;
@@ -29,13 +43,15 @@ import java.util.stream.Stream;
 
 public class Chat extends AppCompatActivity {
 
-    private ArrayAdapter<String> adapter;
+    RecyclerAdapter adapter;
     FloatingActionButton fab;
     EditText editText;
-    ListView massages;
     DatabaseReference database;
     DatabaseReference database2;
     DatabaseReference database3;
+    StorageReference st;
+    RecyclerView recyclerView;
+    private Uri imageUri;
     ArrayList<String> massagesList;
     int i;
     String name;
@@ -47,11 +63,13 @@ public class Chat extends AppCompatActivity {
         fab =findViewById(R.id.fab);
         editText = findViewById(R.id.input);
         database = FirebaseDatabase.getInstance().getReference("Rooms");
-        massages = findViewById(R.id.list_of_messages);
+        st = FirebaseStorage.getInstance().getReference("photos/");
+        recyclerView = findViewById(R.id.recycle_view);
         massagesList = new ArrayList<String>();
-        adapter =  new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, massagesList);
-
-        massages.setAdapter(adapter);
+        adapter = new RecyclerAdapter(this,massagesList);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setAdapter(adapter);
          i = getIntent().getIntExtra("room",0);
          if(i==1) {
              database2 = FirebaseDatabase.getInstance().getReference("Rooms").child("room1").child("messages");
@@ -91,6 +109,7 @@ public class Chat extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 massagesList.removeAll(massagesList);
+                recyclerView.removeAllViews();
                 if(i == 1){
                 for(DataSnapshot ds: dataSnapshot.getChildren()) {
 
@@ -102,6 +121,7 @@ public class Chat extends AppCompatActivity {
                         massagesList.add(ds.getValue(String.class));
                     }
                 }
+
                 adapter.notifyDataSetChanged();
             }
 
@@ -159,6 +179,60 @@ public class Chat extends AppCompatActivity {
         Intent intent = new Intent(getApplicationContext(),MainActivity.class);
         startActivity(intent);
 
+    }
+
+
+
+
+
+    public void openFileManager(View v){
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        mainActivityResultLauncher.launch(intent);
+    }
+
+    ActivityResultLauncher<Intent> mainActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            if(result.getResultCode() == RESULT_OK && result.getData()!=null){
+                imageUri = result.getData().getData();
+                Log.e("SELECTEDIMAGE", imageUri.toString());
+                UploadFile();
+            }
+        }
+    });
+
+    private String getFileExtension(Uri uri){
+        ContentResolver resolver = getContentResolver();
+        MimeTypeMap typeMap = MimeTypeMap.getSingleton();
+        return  typeMap.getExtensionFromMimeType(resolver.getType(uri));
+    }
+
+
+    private void UploadFile(){
+        String filename= System.currentTimeMillis() +"."+ getFileExtension(imageUri);
+        StorageReference fileReference = st.child(filename);
+
+        fileReference.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                if(i==1){
+                    database.child("room1").child("messages")
+                            .push()
+                            .setValue("photos/"+filename);
+
+                    getMessages();
+                }
+                else if(i==2){
+                    database.child("room2").child("messages")
+                            .push()
+                            .setValue("photos/"+filename);
+
+                    getMessages();
+                }
+            }
+        });
     }
 }
 
